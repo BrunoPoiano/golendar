@@ -1,4 +1,3 @@
-# Use a multi-stage build approach to reduce image size
 FROM golang:1.24.2-alpine3.21 AS builder
 
 # Set the working directory for the build stage
@@ -18,7 +17,7 @@ WORKDIR /app/golendar
 
 # Install only the necessary packages in a single RUN to reduce layers
 RUN apk add --no-cache dcron tzdata && \
-  echo "*/2 * * * * /app/golendar/golendar >> /var/log/cron.log 2>&1" > /etc/crontabs/root && \
+  echo "0 8 * * * /app/golendar/golendar >> /var/log/cron.log 2>&1" > /etc/crontabs/root && \
   touch /var/log/cron.log
 
 # Copy only the compiled binary from the builder stage

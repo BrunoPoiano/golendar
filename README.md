@@ -1,12 +1,13 @@
 # Golendar
 
-Golendar is a Go-based notification system that integrates with Sonarr and Radarr to send updates about new TV shows episodes and movie releases via Telegram.
+Golendar is a lightweight, Go-based notification service that integrates with Sonarr and Radarr media management systems. It delivers daily updates at 8:00 AM via Telegram, keeping you informed about the series episodes and movies being released that day.
 
 ## Features
 
-- Monitors TV show releases from Sonarr
-- Tracks movie releases from Radarr
-- Sends notifications through Telegram with:
+- Daily notifications at 8:00 AM
+- TV show episode release notifications via Sonarr integration
+- Movie release notifications via Radarr integration
+- Telegram message delivery with:
   - TV show details including season and episode information
   - Movie information with IMDB links
   - Show artwork/photos (when available)
@@ -17,10 +18,53 @@ Golendar is a Go-based notification system that integrates with Sonarr and Radar
 - Go 1.24.2 or higher
 - A Telegram bot and chat ID
 - Sonarr and/or Radarr installation with API access
+- Docker (optional, for containerized deployment)
+
+## Usage
+
+### Using Docker (Recommended)
+You can find the Docker image here: [golendar image](https://hub.docker.com/r/brunopoiano/golendar)
+
+#### Option 1: Pull from Docker Hub
+```bash
+docker run -d --name golendar --restart unless-stopped -e TZ=America/Sao_Paulo -e TELEGRAM_BOT="your_bot_token" -e TELEGRAM_CHAT_ID="your_chat_id" -e SONARR_URL="sonarr_url" -e SONARR_API_KEY="sonarr_api_key" -e RADARR_URL="radarr_url" -e RADARR_API_KEY="radarr_api_key" docker.io/brunopoiano/golendar
+```
+
+#### Option 2: Using Docker Compose
+```bash
+git clone https://github.com/BrunoPoiano/golendar.git
+cd golendar
+# update the environment variables on docker-compose.yaml file
+docker compose up -d
+```
+
+### Manual Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/BrunoPoiano/golendar.git
+   cd golendar
+   ```
+2. Set up your environment variables
+
+3. Test the application:
+   ```bash
+   go run .
+   ```
+
+4. Build the application:
+   ```bash
+   go build -o golendar
+   ```
+
+5. Run the application:
+   ```bash
+   ./golendar
+   ```
 
 ## Configuration
 
-The application uses environment variables for configuration:
+The application uses environment variables for configuration. You can set these directly in your environment or use the docker-compose.yaml file if running with Docker.
 
 ### Telegram Configuration
 - `TELEGRAM_BOT` - Your Telegram bot token
@@ -33,25 +77,3 @@ The application uses environment variables for configuration:
 ### Radarr Configuration
 - `RADARR_URL` - URL of your Radarr instance (default: http://localhost:7878)
 - `RADARR_API_KEY` - Your Radarr API key
-
-## Project Structure
-
-```
-golendar/
-├── config/
-│   └── config.go         # Configuration loading and management
-├── constants/
-│   └── constants.go      # Global constants and time formats
-├── src/
-│   ├── radarr/          # Radarr API integration
-│   ├── sonarr/          # Sonarr API integration
-│   └── telegram/        # Telegram bot messaging
-├── types/
-│   └── types.go         # Type definitions and structures
-└── utils/
-    └── utils.go         # Utility functions
-```
-
-## License
-
-This project is available as open source under the terms of the MIT License.
