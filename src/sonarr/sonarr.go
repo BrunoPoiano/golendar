@@ -39,8 +39,8 @@ func GetAllReleases(sonarr types.Sonarr, telegramBody types.TelegramRequest) {
 	telegramBody.ParseMode = "Markdown"
 	if len(calendarParsed) > 0 {
 
-		telegramBody.Caption = fmt.Sprintf("*Golendar* \nReleasing Today:")
-
+		utils.GenerateLogs("Golendar | Episodes Releasing Today")
+		telegramBody.Caption = fmt.Sprintf("*Golendar* \nEpisodes Releasing Today:")
 		telegram.SendTelegramMessage(telegramBody)
 
 		for _, item := range calendarParsed {
@@ -61,8 +61,8 @@ func GetAllReleases(sonarr types.Sonarr, telegramBody types.TelegramRequest) {
 		}
 
 	} else {
-		telegramBody.Caption = fmt.Sprintf("*Golendar* \nNo New Releases Today")
-
+		utils.GenerateLogs("Golendar | No New Series episodes Releasing Today")
+		telegramBody.Caption = fmt.Sprintf("*Golendar* \nNo New Series episodes Releasing Today")
 		telegram.SendTelegramMessage(telegramBody)
 	}
 

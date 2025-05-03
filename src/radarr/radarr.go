@@ -42,8 +42,8 @@ func GetAllReleases(radarr types.Radarr, telegramBody types.TelegramRequest) {
 
 	if len(calendarParsed) > 0 {
 
+		utils.GenerateLogs("Golendar | Movies Releasing Today:")
 		telegramBody.Caption = fmt.Sprintf("*Golendar* \nMovies Releasing Today:")
-
 		telegram.SendTelegramMessage(telegramBody)
 
 		for _, item := range calendarParsed {
@@ -56,8 +56,8 @@ func GetAllReleases(radarr types.Radarr, telegramBody types.TelegramRequest) {
 		}
 
 	} else {
+		utils.GenerateLogs("Golendar | No New Movies Releasing Today")
 		telegramBody.Caption = fmt.Sprintf("*Golendar* \nNo New Movies Releasing Today")
-
 		telegram.SendTelegramMessage(telegramBody)
 	}
 
