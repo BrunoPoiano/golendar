@@ -6,10 +6,11 @@ import (
 	"main/src/sonarr"
 	"main/types"
 	"main/utils"
+	"sync"
 )
 
 func main() {
-
+	// Load application configuration from environment variables or config file
 	env, err := config.LoadConfig()
 	if err != nil {
 		utils.GenerateLogs("Error loading config")
@@ -17,46 +18,63 @@ func main() {
 	}
 
 	// Verify that Telegram credentials are available
-	// Exit if either Bot token or Chat ID is missing
 	if env.Telegram.Bot == "" || env.Telegram.ChatId == "" {
 		utils.GenerateLogs("No telegram data available")
 		return
 	}
 
-	// Initialize Telegram bot configuration
-	// Uses environment variables with fallback default values
+	// Initialize Telegram notification object with credentials
 	telegramObj := types.TelegramRequest{
 		Bot:    env.Telegram.Bot,
 		ChatId: env.Telegram.ChatId,
 	}
 
-	// Initialize Sonarr configuration for TV show monitoring
-	// Uses environment variables with fallback default values
-	sonarrObj := types.Sonarr{
-		Url:    env.Sonarr.Url,
-		ApiKey: env.Sonarr.ApiKey,
-	}
+	// Create a WaitGroup to synchronize concurrent operations
+	var wg sync.WaitGroup
 
 	// Check if Sonarr API key is configured
-	if sonarrObj.ApiKey == "" {
-		utils.GenerateLogs("No APIKEY for sonarr")
+	if env.Sonarr.ApiKey == "" {
+		utils.GenerateLogs("No API_KEY for sonarr")
 	} else {
-		// Fetch TV show releases from Sonarr and send notifications via Telegram
-		go sonarr.GetAllReleases(sonarrObj, telegramObj)
-	}
+		// Increment the WaitGroup counter before starting the goroutine
+		wg.Add(1)
 
-	// Initialize Radarr configuration for movie monitoring
-	// Uses environment variables with fallback default values
-	radarrObj := types.Radarr{
-		Url:    env.Radarr.Url,
-		ApiKey: env.Radarr.ApiKey,
+		// Start Sonarr release fetching in a separate goroutine
+		go func() {
+			// Initialize Sonarr API client with configuration
+			sonarrObj := types.Sonarr{
+				Url:    env.Sonarr.Url,
+				ApiKey: env.Sonarr.ApiKey,
+			}
+
+			// Decrement WaitGroup counter when this goroutine completes
+			defer wg.Done()
+			// Fetch and process all TV show releases from Sonarr
+			sonarr.GetAllReleases(sonarrObj, telegramObj)
+		}()
 	}
 
 	// Check if Radarr API key is configured
-	if radarrObj.ApiKey == "" {
-		utils.GenerateLogs("No APIKEY for radarr")
+	if env.Radarr.ApiKey == "" {
+		utils.GenerateLogs("No API_KEY for radarr")
 	} else {
-		// Fetch movie releases from Radarr and send notifications via Telegram
-		go radarr.GetAllReleases(radarrObj, telegramObj)
+		// Increment the WaitGroup counter before starting the goroutine
+		wg.Add(1)
+		// Start Radarr release fetching in a separate goroutine
+		go func() {
+			// Initialize Radarr API client with configuration
+			radarrObj := types.Radarr{
+				Url:    env.Radarr.Url,
+				ApiKey: env.Radarr.ApiKey,
+			}
+
+			// Decrement WaitGroup counter when this goroutine completes
+			defer wg.Done()
+			// Fetch and process all movie releases from Radarr
+			radarr.GetAllReleases(radarrObj, telegramObj)
+		}()
 	}
+
+	// Wait for all goroutines to complete before exiting
+	wg.Wait()
 }

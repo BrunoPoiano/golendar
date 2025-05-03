@@ -44,7 +44,11 @@ func GetAllReleases(sonarr types.Sonarr, telegramBody types.TelegramRequest) {
 		telegram.SendTelegramMessage(telegramBody)
 
 		for _, item := range calendarParsed {
-			seriesParsed, _ := getSeriesInfo(sonarr, item)
+			seriesParsed, err := getSeriesInfo(sonarr, item)
+			if err != nil {
+				utils.GenerateLogs(err.Error())
+				continue
+			}
 
 			seriesFormat := utils.SeriesFormat(item.SeasonNumber, item.EpisodeNumber)
 
@@ -84,7 +88,7 @@ func getSeriesInfo(sonarr types.Sonarr, sonarrCalendar types.SonarrCalendar) (ty
 
 	resp, err := utils.HttpRequest(httpRequest)
 	if err != nil {
-		return types.SeriesInfo{}, nil
+		return types.SeriesInfo{}, err
 	}
 
 	seriesParsed, err := parseSeriesInfo(resp)
