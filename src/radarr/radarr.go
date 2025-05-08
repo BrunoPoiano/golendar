@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"main/constants"
-	"main/src/telegram"
+	"main/src/logs"
 	"main/types"
 	"main/utils"
 )
@@ -17,7 +17,7 @@ import (
 //   - telegramBody: Template for Telegram messages with image support
 //
 // Returns: none
-func GetAllReleases(radarr types.Radarr, telegramBody types.TelegramRequest) {
+func GetAllReleases(radarr types.Radarr) {
 
 	start, end := utils.GetTimeFrame()
 
@@ -30,37 +30,34 @@ func GetAllReleases(radarr types.Radarr, telegramBody types.TelegramRequest) {
 
 	responseBody, err := utils.HttpRequest(httpRequest)
 	if err != nil {
-		utils.GenerateLogs(err.Error())
+		logs.MakeLog(err.Error(), nil)
 	}
 
 	calendarParsed, err := parseRadarrCalendar(responseBody)
 	if err != nil {
-		utils.GenerateLogs(err.Error())
+		logs.MakeLog(err.Error(), nil)
 	}
 
-	telegramBody.ParseMode = "markdown"
+	messageType := types.MessageType{
+		Message: fmt.Sprintf("*Golendar* \nMovies Releasing Today:"),
+	}
 
 	if len(calendarParsed) > 0 {
 
-		utils.GenerateLogs("Golendar | Movies Releasing Today:")
-		telegramBody.Caption = fmt.Sprintf("*Golendar* \nMovies Releasing Today:")
-		telegram.SendTelegramMessage(telegramBody)
+		logs.MakeLog("Golendar | Movies Releasing Today:", &messageType)
 
 		for _, item := range calendarParsed {
 
-			utils.GenerateLogs(fmt.Sprintf("%s | %s", item.Title, item.Overview))
-
-			telegramBody.Caption = fmt.Sprintf("*%s* \n_%s_ \n[%s](https://www.imdb.com/title/%s/)", item.Title, item.Overview, item.Title, item.ImdbId)
-
-			telegram.SendTelegramMessage(telegramBody)
+			log := fmt.Sprintf("%s | %s", item.Title, item.Overview)
+			messageType.Message = fmt.Sprintf("*%s* \n_%s_ \n[%s](https://www.imdb.com/title/%s/)", item.Title, item.Overview, item.Title, item.ImdbId)
+			logs.MakeLog(log, &messageType)
 		}
 
 	} else {
-		utils.GenerateLogs("Golendar | No New Movies Releasing Today")
-		telegramBody.Caption = fmt.Sprintf("*Golendar* \nNo New Movies Releasing Today")
-		telegram.SendTelegramMessage(telegramBody)
+		log := ("Golendar | No New Movies Releasing Today")
+		messageType.Message = fmt.Sprintf("*Golendar* \nNo New Movies Releasing Today")
+		logs.MakeLog(log, &messageType)
 	}
-
 }
 
 // parseRadarrCalendar parses the Radarr calendar response and filters out

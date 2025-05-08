@@ -7,11 +7,12 @@ Golendar is a lightweight, Go-based notification service that integrates with So
 - Daily notifications at 8:00 AM
 - TV show episode release notifications via Sonarr integration
 - Movie release notifications via Radarr integration
-- Telegram message delivery with:
+- Message delivery with:
   - TV show details including season and episode information
   - Movie information with IMDB links
   - Show artwork/photos (when available)
   - Release overviews and descriptions
+
 
 ## Prerequisites
 
@@ -27,7 +28,7 @@ You can find the Docker image here: [golendar image](https://hub.docker.com/r/br
 
 #### Option 1: Pull from Docker Hub
 ```bash
-docker run -d --name golendar --restart unless-stopped -e TZ=America/Sao_Paulo -e TELEGRAM_BOT="your_bot_token" -e TELEGRAM_CHAT_ID="your_chat_id" -e SONARR_URL="sonarr_url" -e SONARR_API_KEY="sonarr_api_key" -e RADARR_URL="radarr_url" -e RADARR_API_KEY="radarr_api_key" docker.io/brunopoiano/golendar
+docker run -d --name golendar --restart unless-stopped -e TZ=America/Sao_Paulo -e TELEGRAM_BOT="your_bot_token" -e TELEGRAM_CHAT_ID="your_chat_id" -e DISCORD_URL="discord_webhook_url" -e DISCORD_USERNAME="Golendar" -e SONARR_URL="sonarr_url" -e SONARR_API_KEY="sonarr_api_key" -e RADARR_URL="radarr_url" -e RADARR_API_KEY="radarr_api_key"  docker.io/brunopoiano/golendar
 ```
 
 #### Option 2: Using Docker Compose
@@ -66,10 +67,6 @@ docker compose up -d
 
 The application uses environment variables for configuration. You can set these directly in your environment or use the docker-compose.yaml file if running with Docker.
 
-### Telegram Configuration
-- `TELEGRAM_BOT` - Your Telegram bot token
-- `TELEGRAM_CHAT_ID` - The chat ID where notifications will be sent
-
 ### Sonarr Configuration
 - `SONARR_URL` - URL of your Sonarr instance (default: http://localhost:8989)
 - `SONARR_API_KEY` - Your Sonarr API key
@@ -77,3 +74,11 @@ The application uses environment variables for configuration. You can set these 
 ### Radarr Configuration
 - `RADARR_URL` - URL of your Radarr instance (default: http://localhost:7878)
 - `RADARR_API_KEY` - Your Radarr API key
+
+### Discord Configuration
+- `DISCORD_URL` - Your Discord webhook URL
+- `DISCORD_USERNAME` - The username for the bot in Discord (default: Golendar)
+
+### Telegram Configuration
+- `TELEGRAM_BOT` - Your Telegram bot token
+- `TELEGRAM_CHAT_ID` - The chat ID where notifications will be sent

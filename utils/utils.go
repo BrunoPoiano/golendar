@@ -64,19 +64,6 @@ func HttpRequest(data types.HttpRequest) ([]byte, error) {
 	return body, nil
 }
 
-// GenerateLogs prints a formatted log entry with the current timestamp and provided value.
-// Format: DD/MM/YYYY HH:MM:SS | message
-//
-// Parameters:
-//   - value: the string message to log
-func GenerateLogs(value string) {
-	now := time.Now()
-
-	timeFormated := fmt.Sprintf("%02d/%02d/%d %02d:%02d:%02d", now.Day(), now.Month(), now.Year(), now.Hour(), now.Minute(), now.Second())
-
-	println(timeFormated, "|", value)
-}
-
 // GetTimeFrame returns a start and end time for a 24-hour period.
 // The start time is the current day at 03:00:00 UTC.
 // The end time is the next day at 02:59:59.999 UTC.

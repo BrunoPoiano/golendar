@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"main/constants"
-	"main/src/telegram"
+	"main/src/logs"
 	"main/types"
 	"main/utils"
 )
@@ -15,7 +15,7 @@ import (
 // Params:
 //   - sonarr: Configuration for the Sonarr API connection
 //   - telegramBody: The Telegram message request object to be populated
-func GetAllReleases(sonarr types.Sonarr, telegramBody types.TelegramRequest) {
+func GetAllReleases(sonarr types.Sonarr) {
 
 	start, end := utils.GetTimeFrame()
 
@@ -28,44 +28,43 @@ func GetAllReleases(sonarr types.Sonarr, telegramBody types.TelegramRequest) {
 
 	responseBody, err := utils.HttpRequest(httpRequest)
 	if err != nil {
-		utils.GenerateLogs(err.Error())
+		logs.MakeLog(err.Error(), nil)
 	}
 
 	calendarParsed, err := parseSonarrCalendar(responseBody)
 	if err != nil {
-		utils.GenerateLogs(err.Error())
+		logs.MakeLog(err.Error(), nil)
 	}
 
-	telegramBody.ParseMode = "Markdown"
+	messageType := types.MessageType{
+		Message: fmt.Sprintf("*Golendar* \nEpisodes Releasing Today:"),
+	}
+
 	if len(calendarParsed) > 0 {
 
-		utils.GenerateLogs("Golendar | Episodes Releasing Today")
-		telegramBody.Caption = fmt.Sprintf("*Golendar* \nEpisodes Releasing Today:")
-		telegram.SendTelegramMessage(telegramBody)
+		logs.MakeLog("Golendar | Episodes Releasing Today", &messageType)
 
 		for _, item := range calendarParsed {
 			seriesParsed, err := getSeriesInfo(sonarr, item)
 			if err != nil {
-				utils.GenerateLogs(err.Error())
+				logs.MakeLog(err.Error(), nil)
 				continue
 			}
 
 			seriesFormat := utils.SeriesFormat(item.SeasonNumber, item.EpisodeNumber)
 
-			utils.GenerateLogs(fmt.Sprintf("%s | %s - %s | %s", seriesParsed.Title, seriesFormat, item.Title, item.Overview))
-
-			telegramBody.Caption = fmt.Sprintf("*%s* \n%s - %s \n%s", seriesParsed.Title, seriesFormat, item.Title, item.Overview)
-			telegramBody.PhotoUrl = seriesParsed.Pictures[1].RemoteUrl
-
-			telegram.SendTelegramPhotoMessage(telegramBody)
+			log := fmt.Sprintf("%s (%s) | %s - %s | %s", seriesParsed.Title, seriesParsed.AirTime, seriesFormat, item.Title, item.Overview)
+			messageType.Message = fmt.Sprintf("*%s* (%sh) \n%s - %s \n\n%s", seriesParsed.Title, seriesParsed.AirTime, seriesFormat, item.Title, item.Overview)
+			messageType.PhotoUrl = seriesParsed.Pictures[1].RemoteUrl
+			messageType.PhotoCaption = seriesParsed.Title
+			logs.MakeLog(log, &messageType)
 		}
 
 	} else {
-		utils.GenerateLogs("Golendar | No New Series episodes Releasing Today")
-		telegramBody.Caption = fmt.Sprintf("*Golendar* \nNo New Series episodes Releasing Today")
-		telegram.SendTelegramMessage(telegramBody)
+		log := "Golendar | No New Series episodes Releasing Today"
+		messageType.Message = fmt.Sprintf("*Golendar* \nNo New Series episodes Releasing Today")
+		logs.MakeLog(log, &messageType)
 	}
-
 }
 
 // getSeriesInfo retrieves detailed information about a TV series from Sonarr.

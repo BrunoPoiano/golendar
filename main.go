@@ -2,10 +2,10 @@ package main
 
 import (
 	"main/config"
+	"main/src/logs"
 	"main/src/radarr"
 	"main/src/sonarr"
 	"main/types"
-	"main/utils"
 	"sync"
 )
 
@@ -13,20 +13,14 @@ func main() {
 	// Load application configuration from environment variables or config file
 	env, err := config.LoadConfig()
 	if err != nil {
-		utils.GenerateLogs("Error loading config")
+		logs.MakeLog("Error loading config", nil)
 		return
 	}
 
-	// Verify that Telegram credentials are available
-	if env.Telegram.Bot == "" || env.Telegram.ChatId == "" {
-		utils.GenerateLogs("No telegram data available")
-		return
-	}
-
-	// Initialize Telegram notification object with credentials
-	telegramObj := types.TelegramRequest{
-		Bot:    env.Telegram.Bot,
-		ChatId: env.Telegram.ChatId,
+	// Check if Telegram Bot Token and Chat ID or Discord Webhook URL are configured
+	if (env.Telegram.Bot == "" || env.Telegram.ChatId == "") && (env.Discord.Url == "") {
+		// If none of the notification services are configured, log a message
+		logs.MakeLog("No Notification data available", nil)
 	}
 
 	// Create a WaitGroup to synchronize concurrent operations
@@ -34,7 +28,7 @@ func main() {
 
 	// Check if Sonarr API key is configured
 	if env.Sonarr.ApiKey == "" {
-		utils.GenerateLogs("No API_KEY for sonarr")
+		logs.MakeLog("No API_KEY for sonarr", nil)
 	} else {
 		// Increment the WaitGroup counter before starting the goroutine
 		wg.Add(1)
@@ -50,13 +44,13 @@ func main() {
 			// Decrement WaitGroup counter when this goroutine completes
 			defer wg.Done()
 			// Fetch and process all TV show releases from Sonarr
-			sonarr.GetAllReleases(sonarrObj, telegramObj)
+			sonarr.GetAllReleases(sonarrObj)
 		}()
 	}
 
 	// Check if Radarr API key is configured
 	if env.Radarr.ApiKey == "" {
-		utils.GenerateLogs("No API_KEY for radarr")
+		logs.MakeLog("No API_KEY for radarr", nil)
 	} else {
 		// Increment the WaitGroup counter before starting the goroutine
 		wg.Add(1)
@@ -71,7 +65,7 @@ func main() {
 			// Decrement WaitGroup counter when this goroutine completes
 			defer wg.Done()
 			// Fetch and process all movie releases from Radarr
-			radarr.GetAllReleases(radarrObj, telegramObj)
+			radarr.GetAllReleases(radarrObj)
 		}()
 	}
 

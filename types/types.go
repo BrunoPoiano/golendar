@@ -9,11 +9,37 @@ type HttpRequest struct {
 
 type Config struct {
 	Telegram TelegramRequest
+	Discord  DiscordRequest
 	Sonarr   Sonarr
 	Radarr   Radarr
 }
 
-// //////////////////Sonarr
+type MessageType struct {
+	Message      string
+	PhotoUrl     string
+	PhotoCaption string
+	ParseMode    string
+}
+
+// ///////////////// Telegram
+type TelegramRequest struct {
+	Bot       string
+	ChatId    string
+	PhotoUrl  string
+	Caption   string
+	ParseMode string
+}
+
+// ///////////// Discord
+type DiscordRequest struct {
+	Url           string
+	Content       string
+	Username      string
+	EmbedTitle    string
+	EmbedPhotoUrl string
+}
+
+////////////////////Sonarr
 
 type Sonarr struct {
 	Url    string
@@ -33,6 +59,7 @@ type SonarrCalendar struct {
 
 type SeriesInfo struct {
 	Title    string      `json:"title"`
+	AirTime  string      `json:"airTime"`
 	Pictures []ImageInfo `json:"images"`
 }
 
@@ -56,13 +83,4 @@ type RadarrCalendar struct {
 	ReleaseDate   string `json:"releaseDate"`
 	Id            int    `json:"id"`
 	ImdbId        string `json:"imdbId"`
-}
-
-// ///////////////// Telegram
-type TelegramRequest struct {
-	Bot       string
-	ChatId    string
-	PhotoUrl  string
-	Caption   string
-	ParseMode string
 }
